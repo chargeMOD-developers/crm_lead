@@ -3,7 +3,7 @@ name: Deploy CRM
 on:
   push:
     branches:
-      - develop
+      - main
 
 jobs:
   deploy:
@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup SSH key
         run: |
@@ -40,23 +41,37 @@ jobs:
           script: |
             set -e
 
+            export PATH="$HOME/.local/bin:$PATH"
+
             export NVM_DIR="$HOME/.nvm"
             if [ -s "$NVM_DIR/nvm.sh" ]; then
               . "$NVM_DIR/nvm.sh"
               nvm use 24
             fi
 
-            cd /home/${{ secrets.DEPLOY_USER }}/frappe/frappe-bench
+            BENCH="$HOME/.local/bin/bench"
+            BENCH_DIR="/home/${{ secrets.DEPLOY_USER }}/frappe/frappe-bench"
+            SITE="crm.chargemod.com"
 
-            bench setup requirements crm || true
+            cd "$BENCH_DIR"
 
-            bench --site crm.chargemod.com migrate
+            echo "Checking bench..."
+            "$BENCH" --version
 
-            bench build --app crm
+            echo "Installing/updating requirements..."
+            "$BENCH" setup requirements crm || true
 
-            bench --site crm.chargemod.com clear-cache
-            bench --site crm.chargemod.com clear-website-cache
+            echo "Running migrations..."
+            "$BENCH" --site "$SITE" migrate
 
+            echo "Building CRM assets..."
+            "$BENCH" build --app crm
+
+            echo "Clearing cache..."
+            "$BENCH" --site "$SITE" clear-cache
+            "$BENCH" --site "$SITE" clear-website-cache
+
+            echo "Restarting services..."
             sudo supervisorctl restart all
             sudo systemctl reload nginx
 

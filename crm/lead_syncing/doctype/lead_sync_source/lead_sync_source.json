@@ -24,7 +24,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Type",
-   "options": "Facebook",
+   "options": "Facebook\nInstagram\nWhatsApp",
    "reqd": 1
   },
   {
@@ -64,7 +64,7 @@
    "label": "Enabled?"
   },
   {
-   "depends_on": "eval:doc.type===\"Facebook\"",
+   "depends_on": "eval:doc.type===\"Facebook\" || doc.type===\"Instagram\"",
    "fieldname": "facebook_section",
    "fieldtype": "Section Break",
    "label": "Facebook"

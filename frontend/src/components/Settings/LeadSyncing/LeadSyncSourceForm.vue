@@ -19,7 +19,7 @@
         </div>
 
         <Button
-          v-if="!isLocal && docResource?.document?.syncLeads"
+          v-if="!isLocal && docResource?.document?.syncLeads && sourceTypeValue !== 'WhatsApp'"
           :label="__('Sync Now')"
           variant="outline"
           :loading="docResource?.document?.syncLeads.loading"
@@ -75,7 +75,7 @@
             />
 
             <FormControl
-              v-if="fieldsMap.background_sync_frequency"
+              v-if="fieldsMap.background_sync_frequency && sourceTypeValue !== 'WhatsApp'"
               v-model="syncSource.background_sync_frequency"
               type="select"
               required="true"
@@ -84,6 +84,7 @@
             />
 
             <FormControl
+              v-if="sourceTypeValue !== 'WhatsApp'"
               v-model="syncSource.access_token"
               type="password"
               required="true"
@@ -101,7 +102,7 @@
             </FormControl>
 
             <FormControl
-              v-if="!isLocal && sourceDoc && sourceDoc.last_synced_at"
+              v-if="!isLocal && sourceDoc && sourceDoc.last_synced_at && sourceTypeValue !== 'WhatsApp'"
               :modelValue="formatDate(sourceDoc.last_synced_at)"
               disabled
               type="datetime"
@@ -109,14 +110,14 @@
             />
 
             <Link
-              v-if="!isLocal"
+              v-if="!isLocal && (sourceTypeValue === 'Facebook' || sourceTypeValue === 'Instagram')"
               v-model="syncSource.facebook_page"
               label="Facebook Page"
               doctype="Facebook Page"
             />
 
             <Link
-              v-if="!isLocal && syncSource.facebook_page"
+              v-if="!isLocal && syncSource.facebook_page && (sourceTypeValue === 'Facebook' || sourceTypeValue === 'Instagram')"
               v-model="syncSource.facebook_lead_form"
               label="Lead Form"
               doctype="Facebook Lead Form"
@@ -129,6 +130,7 @@
           <!-- Mapping Grid -->
           <div
             v-if="
+              sourceTypeValue !== 'WhatsApp' &&
               syncSource.facebook_lead_form &&
               mappingFormDocResource &&
               mappingFormDocResource.document?.doc
@@ -249,6 +251,13 @@ const syncSource = ref({
   enabled: true,
   background_sync_frequency:
     fieldsMap.value.background_sync_frequency?.default || 'Hourly',
+})
+
+const sourceTypeValue = computed(() => {
+  if (!syncSource.value.type) return ''
+  return typeof syncSource.value.type === 'object'
+    ? syncSource.value.type.value
+    : syncSource.value.type
 })
 
 const isLocal = ref(true)

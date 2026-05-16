@@ -45,6 +45,15 @@ def validate(doc, method):
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), "CRM WhatsApp: failed to resolve contact from number")
 
+	# Create a lead from incoming WhatsApp message if no existing lead/deal found
+	if doc.type == "Incoming":
+		try:
+			from crm.lead_syncing.doctype.lead_sync_source.whatsapp import create_lead_from_whatsapp_message
+
+			create_lead_from_whatsapp_message(doc)
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "CRM WhatsApp: failed to create lead from message")
+
 
 def on_update(doc, method):
 	frappe.publish_realtime(

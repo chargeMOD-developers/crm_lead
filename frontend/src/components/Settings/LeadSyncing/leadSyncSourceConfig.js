@@ -1,4 +1,6 @@
 import LogoFacebook from '@/components/Icons/FacebookIcon.vue'
+import LogoInstagram from '@/components/Icons/InstagramIcon.vue'
+import LogoWhatsApp from '@/components/Icons/WhatsAppIcon.vue'
 
 export const supportedSourceTypes = [
   {
@@ -11,10 +13,32 @@ export const supportedSourceTypes = [
     link: 'https://www.facebook.com/business/help/503306463479099?id=2190812977867143',
     custom: false,
   },
+  {
+    label: 'Instagram',
+    value: 'Instagram',
+    icon: LogoInstagram,
+    info: __(
+      'Instagram Lead Ads use the same Meta API as Facebook. You will need a Meta developer account and an access token. Read more',
+    ),
+    link: 'https://www.facebook.com/business/help/503306463479099?id=2190812977867143',
+    custom: false,
+  },
+  {
+    label: 'WhatsApp',
+    value: 'WhatsApp',
+    icon: LogoWhatsApp,
+    info: __(
+      'Leads are automatically created from incoming WhatsApp messages from new contacts.',
+    ),
+    link: '',
+    custom: false,
+  },
 ]
 
 export const sourceIcon = {
   Facebook: LogoFacebook,
+  Instagram: LogoInstagram,
+  WhatsApp: LogoWhatsApp,
 }
 
 export const fbSourceFields = [

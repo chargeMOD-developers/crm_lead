@@ -8,6 +8,7 @@ from crm.lead_syncing.doctype.lead_sync_source.facebook import (
 	FacebookSyncSource,
 	fetch_and_store_pages_from_facebook,
 )
+from crm.lead_syncing.doctype.lead_sync_source.instagram import InstagramSyncSource
 
 
 class LeadSyncSource(Document):
@@ -27,7 +28,7 @@ class LeadSyncSource(Document):
 		facebook_lead_form: DF.Link | None
 		facebook_page: DF.Link | None
 		last_synced_at: DF.Datetime | None
-		type: DF.Literal["Facebook"]
+		type: DF.Literal["Facebook", "Instagram", "WhatsApp"]
 	# end: auto-generated types
 
 	def validate(self):
@@ -49,12 +50,14 @@ class LeadSyncSource(Document):
 			frappe.throw(frappe._("A lead sync source is already enabled for this Facebook Lead Form!"))
 
 	def before_insert(self):
-		if self.type == "Facebook" and self.access_token:
+		if self.type in ("Facebook", "Instagram") and self.access_token:
 			fetch_and_store_pages_from_facebook(self.access_token)
-		# rest of the source types can be added here
 
 	@frappe.whitelist()
 	def sync_leads(self):
+		if self.type == "WhatsApp":
+			frappe.throw(frappe._("WhatsApp leads are created automatically from incoming messages. Manual sync is not needed."))
+
 		if frappe.conf.developer_mode:
 			self._sync_leads()
 			return
@@ -67,3 +70,9 @@ class LeadSyncSource(Document):
 				frappe.throw(frappe._("Please select a lead gen form before syncing!"))
 
 			FacebookSyncSource(self.get_password("access_token"), self.facebook_lead_form).sync()
+
+		elif self.type == "Instagram" and self.access_token:
+			if not self.facebook_lead_form:
+				frappe.throw(frappe._("Please select a lead gen form before syncing!"))
+
+			InstagramSyncSource(self.get_password("access_token"), self.facebook_lead_form).sync()
